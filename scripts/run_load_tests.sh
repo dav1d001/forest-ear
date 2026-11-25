@@ -6,6 +6,7 @@ USERS=${1:-50}; RATE=${2:-10}; DUR=${3:-60s}
 mkdir -p results
 for N in 1 2 3 4; do
   echo "=== $N container(s) ==="
+  docker compose down
   docker compose up -d --build --scale api=$N --wait
   sleep 15                                        # let every replica load the model
   locust -f locustfile.py --host http://localhost:8080 --headless \

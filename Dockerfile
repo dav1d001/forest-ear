@@ -5,7 +5,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends libsndfile1 cur
 WORKDIR /app
 
 COPY requirements.txt .
-RUN pip install -r requirements.txt
+RUN pip install --default-timeout=120 --retries 10 --no-cache-dir -r requirements.txt
 
 COPY src ./src
 COPY ui ./ui

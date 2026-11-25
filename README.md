@@ -1,6 +1,6 @@
 # ForestEar: listening for chainsaws, fire and helicopters in the forest
 
-> **Demo video:** `PASTE YOUTUBE LINK HERE` &nbsp;|&nbsp; **Live app:** `PASTE DEPLOYED URL HERE` &nbsp;|&nbsp; **Repo:** `PASTE GITHUB URL HERE`
+> **Live app:** `PASTE DEPLOYED URL HERE` &nbsp;|&nbsp; **Repo:** `https://github.com/dav1d001/forest-ear`
 
 African Leadership University · BSE · Machine Learning Pipeline (summative)
 
@@ -120,25 +120,44 @@ Rejected models are still saved and listed as *rejected* in the Versions table, 
 
 ## 6. Flood-request simulation (Locust)
 
-`locustfile.py` simulates field sensors posting audio clips (10 : 2 : 1 mix of `/api/predict`, `/api/status`, `/health`).
+`locustfile.py` simulates field sensors posting audio clips (a 10 : 2 : 1 mix of `/api/predict`, `/api/status` and `/health`).
 
-**Measured here (single uvicorn process, 1 vCPU sandbox, 20 simulated users, 40 s, no Docker):**
+### Docker scaling: 1 to 4 containers
+
+Each run used 50 simulated users, a spawn rate of 10 per second and a 60-second duration. Requests went through an nginx load balancer to 1, 2, 3 or 4 API containers (one uvicorn worker each) on a 4-core GitHub Codespace. Figures below are for `POST /api/predict`:
+
+| Containers | Requests | Failures | Req/s | Avg (ms) | p50 (ms) | p95 (ms) | p99 (ms) |
+|---|---|---|---|---|---|---|---|
+| 1 | 288 | 0 | 4.9 | 6229 | 6500 | 7800 | 8300 |
+| 2 | 578 | 0 | 9.8 | 2570 | 2600 | 4000 | 4400 |
+| 3 | 815 | 0 | 13.8 | 1602 | 1400 | 3700 | 4100 |
+| 4 | 938 | 0 | 15.9 | 1286 | 860 | 3400 | 4200 |
+
+![Latency and throughput by container count](results/load_test.png)
+
+Reproduce with:
+```bash
+scripts/run_load_tests.sh 50 10 60s    # writes results/summary.md and results/load_test.png
+```
+
+**What the results show**
+- There were zero failed requests in every run.
+- Throughput roughly doubled from 1 to 2 containers (4.9 to 9.8 req/s), and median latency fell from 6.5 s to 2.6 s.
+- At 4 containers, throughput was 3.2 times that of a single container and the median latency was 0.86 s.
+- Gains flatten beyond 2 to 3 containers, and p99 stays at about 4 s. The containers, nginx and Locust all shared the same 4 CPU cores, so the 3- and 4-container figures understate what separate machines would deliver.
+- Latency is high in absolute terms because 50 users send requests continuously to a CPU-bound TensorFlow model. Adding containers is what brings it down.
+
+Raw Locust output is in `results/`.
+
+### Earlier single-process check (no Docker)
+
+A quick check before containerising: one uvicorn process on a 1-vCPU sandbox, 20 simulated users, 40 seconds.
 
 | Setup | Predict requests | Failures | Req/s | Median | p95 | p99 |
 |---|---|---|---|---|---|---|
 | 1 process, 1 vCPU | 492 | 0 | 12.6 | 120 ms | 310 ms | 390 ms |
 
-**Docker scaling results (1 to 4 containers): fill in after running on your machine/VM:**
-```bash
-scripts/run_load_tests.sh 50 10 60s     # writes results/summary.md and results/load_test.png
-```
-
-| Containers | Requests | Failures | Req/s | Avg (ms) | p50 (ms) | p95 (ms) | p99 (ms) |
-|---|---|---|---|---|---|---|---|
-| 1 | | | | | | | |
-| 2 | | | | | | | |
-| 3 | | | | | | | |
-| 4 | | | | | | | |
+This run is not comparable with the table above. It used fewer users and a different machine, so the latencies are much lower.
 
 ## 7. API summary (full docs at `/docs`)
 
