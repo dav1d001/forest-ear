@@ -1,0 +1,8 @@
+.git
+__pycache__
+*.pyc
+data/.cache
+data/uploads
+data/*.db*
+notebook/.ipynb_checkpoints
+results

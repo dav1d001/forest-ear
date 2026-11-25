@@ -1,0 +1,12 @@
+# Runtime (API + training). Versions are the ones the project was built and tested with.
+tensorflow-cpu==2.21.0
+keras==3.15.1
+librosa==1.0.1
+numpy==2.5.4
+scipy==1.18.1
+scikit-learn==1.9.1
+soundfile==0.14.0
+pandas==3.0.6
+fastapi==0.165.0
+uvicorn==0.54.0
+python-multipart==0.0.34

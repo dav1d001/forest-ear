@@ -1,0 +1,27 @@
+# One command, N copies of the API behind an nginx load balancer:
+#   docker compose up --build --scale api=3
+# UI + API are then at http://localhost:8080
+services:
+  api:
+    build: .
+    expose: ["8000"]
+    environment:
+      MODELS_DIR: /shared/models          # shared so every replica sees a newly promoted model
+      UPLOAD_DIR: /shared/uploads
+      DB_PATH: /shared/forest_ear.db
+      AUTO_RETRAIN_MIN_CLIPS: "20"
+    volumes:
+      - shared:/shared
+    command: >
+      sh -c "[ -f /shared/models/registry.json ] || (mkdir -p /shared/models && cp -rn /app/models/. /shared/models/);
+             uvicorn src.api:app --host 0.0.0.0 --port 8000 --workers 1"
+    deploy:
+      resources:
+        limits: { cpus: "1.0", memory: 2g }
+  lb:
+    image: nginx:1.27-alpine
+    ports: ["8080:80"]
+    volumes: ["./nginx.conf:/etc/nginx/conf.d/default.conf:ro"]
+    depends_on: [api]
+volumes:
+  shared:

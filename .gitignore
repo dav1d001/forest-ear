@@ -1,0 +1,10 @@
+__pycache__/
+*.pyc
+.ipynb_checkpoints/
+data/.cache/
+data/uploads/
+data/*.db
+data/*.db-*
+models/.retrain.lock
+results/*.csv_*
+.venv/

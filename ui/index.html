@@ -1,0 +1,130 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ForestEar · forest sound monitor</title>
+<link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+<header class="bar">
+  <div class="brand">
+    <svg viewBox="0 0 32 32" width="30" height="30" aria-hidden="true"><path d="M3 18h3l3-9 4 16 4-22 4 18 3-6h5" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    <span>ForestEar</span>
+  </div>
+  <div class="pulse" id="pulse" aria-live="polite">Connecting…</div>
+  <nav class="tabs" role="tablist">
+    <button role="tab" data-tab="listen" aria-selected="true">Listen</button>
+    <button role="tab" data-tab="insights">Insights</button>
+    <button role="tab" data-tab="teach">Teach &amp; retrain</button>
+    <button role="tab" data-tab="monitor">Monitor</button>
+  </nav>
+</header>
+
+<main>
+<!-- ============================ LISTEN ============================ -->
+<section id="tab-listen" class="tab on">
+  <div class="listen-grid">
+    <div class="ear">
+      <div class="drop" id="drop" tabindex="0" role="button" aria-label="Choose or drop a sound clip">
+        <canvas id="spec" width="630" height="320"></canvas>
+        <div class="drop-hint" id="dropHint">
+          <strong>Drop a sound clip here</strong>
+          <span>WAV, FLAC or OGG · any length · we use the loudest 5 seconds</span>
+        </div>
+        <input type="file" id="file" accept=".wav,.flac,.ogg,audio/*" hidden>
+      </div>
+      <div class="row">
+        <button class="btn" id="pick">Choose file</button>
+        <button class="btn ghost" id="rec">Record 5 s</button>
+        <audio id="player" controls hidden></audio>
+      </div>
+      <div class="samples">
+        <h3>No audio handy? Try a held-out test clip</h3>
+        <div id="samples" class="chips"></div>
+      </div>
+    </div>
+
+    <aside class="verdict" id="verdict" aria-live="polite">
+      <div class="empty" id="verdictEmpty">
+        <h2>What is that sound?</h2>
+        <p>Add a clip and ForestEar names it, shows how sure it is, and flags forest-threat sounds.</p>
+      </div>
+      <div id="verdictBody" hidden>
+        <div class="alert" id="alertBanner" hidden>Forest-threat sound detected</div>
+        <div class="lowconf" id="lowBanner" hidden>Low confidence: this may be a sound the model has not learned. Add it in Teach &amp; retrain.</div>
+        <h2 id="vLabel">—</h2>
+        <div class="conf"><div class="conf-fill" id="vFill"></div></div>
+        <p class="conf-num"><span id="vConf">—</span> sure · <span id="vMs">—</span> ms · model v<span id="vVer">—</span></p>
+        <h3>Other candidates</h3>
+        <ul class="top" id="vTop"></ul>
+        <p class="truth" id="vTruth" hidden></p>
+      </div>
+    </aside>
+  </div>
+</section>
+
+<!-- ============================ INSIGHTS ============================ -->
+<section id="tab-insights" class="tab">
+  <div class="intro">
+    <h2>What the sounds look like</h2>
+    <p>Measured on all 400 training and test clips. Orange marks the three forest-threat classes.</p>
+  </div>
+  <div id="insightBody"></div>
+</section>
+
+<!-- ============================ TEACH ============================ -->
+<section id="tab-teach" class="tab">
+  <div class="teach-grid">
+    <div class="panel">
+      <h2>1 · Upload labelled clips</h2>
+      <p class="muted">Many files, one label. Use an existing class to improve it, or a new name to teach the model a new sound.</p>
+      <label class="field">Sound class
+        <input id="upLabel" list="classList" placeholder="e.g. chirping_birds" autocomplete="off">
+        <datalist id="classList"></datalist>
+      </label>
+      <div class="drop small" id="bulkDrop" tabindex="0" role="button">
+        <strong id="bulkText">Drop several clips here or click to choose</strong>
+        <input type="file" id="bulkFiles" accept=".wav,.flac,.ogg,audio/*" multiple hidden>
+      </div>
+      <div class="row"><button class="btn" id="upBtn" disabled>Upload clips</button><span id="upMsg" class="msg"></span></div>
+      <h3>Waiting to be learned</h3>
+      <div id="pendingList" class="muted">Nothing uploaded yet.</div>
+    </div>
+
+    <div class="panel">
+      <h2>2 · Retrain</h2>
+      <p class="muted" id="autoNote"></p>
+      <div id="reco" class="reco" hidden></div>
+      <label class="field">Mode
+        <select id="mode">
+          <option value="finetune">Fine-tune the current model (recommended)</option>
+          <option value="scratch">Train a fresh model from scratch</option>
+        </select>
+      </label>
+      <div class="row"><button class="btn strong" id="retrainBtn">Retrain now</button><span id="rtMsg" class="msg"></span></div>
+      <ol class="stages" id="stages"></ol>
+      <h3>Training history</h3>
+      <div id="runs" class="runs muted">No runs yet.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================ MONITOR ============================ -->
+<section id="tab-monitor" class="tab">
+  <div class="tiles" id="tiles"></div>
+  <div class="mon-grid">
+    <div class="panel"><h2>Live traffic</h2><div id="traffic"></div></div>
+    <div class="panel"><h2>Model in production</h2><div id="modelInfo"></div></div>
+  </div>
+  <div class="mon-grid">
+    <div class="panel"><h2>Where the model is right and wrong</h2><p class="muted">Rows are the true sound, columns what the model said (held-out test clips).</p><div id="cm"></div></div>
+    <div class="panel"><h2>Versions</h2><div id="versions"></div></div>
+  </div>
+</section>
+</main>
+
+<footer>ForestEar · ESC-10 sound data (Piczak, 2015) · API docs at <a href="/docs">/docs</a></footer>
+<script src="/static/app.js"></script>
+</body>
+</html>
