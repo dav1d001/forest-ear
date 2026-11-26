@@ -1,6 +1,24 @@
 # ForestEar: listening for chainsaws, fire and helicopters in the forest
 
-> **Live app:** `PASTE DEPLOYED URL HERE` &nbsp;|&nbsp; **Repo:** `https://github.com/dav1d001/forest-ear`
+> **Repo:** https://github.com/dav1d001/forest-ear
+
+## Deployment
+
+ForestEar is deployed with **Docker Compose**: an nginx load balancer in front of one or more API containers (each runs the FastAPI service and the web UI). It was built, run and load-tested on a cloud environment (GitHub Codespaces, 4 vCPU, 15 GB RAM). The Flood-request results in section 6 were recorded there.
+
+**Steps to run** (needs Docker with Compose v2; the first build takes 5 to 10 minutes):
+```bash
+git clone https://github.com/dav1d001/forest-ear.git
+cd forest-ear
+docker compose up -d --build --scale api=3      # 3 API containers behind nginx
+```
+1. Open http://localhost:8080. In GitHub Codespaces, open the **Ports** tab and open port 8080 in the browser.
+2. API docs (Swagger): `/docs`. Health check: `curl http://localhost:8080/health`.
+3. Stop everything with `docker compose down`.
+
+**What to try:** *Listen* (predict one clip), *Insights* (data visualizations), *Teach and retrain* (upload the clips in `demo_uploads/chirping_birds/` with the label `chirping_birds`, then retrain), *Monitor* (up-time, latency, model versions).
+
+To run without Docker, see "Run locally" below.
 
 African Leadership University · BSE · Machine Learning Pipeline (summative)
 
@@ -36,7 +54,7 @@ Audio is converted into log-mel spectrograms and classified by a small CNN (abou
 
 ### Run locally
 ```bash
-git clone <this repo> && cd forest_ear
+git clone https://github.com/dav1d001/forest-ear.git && cd forest-ear
 python -m venv .venv && source .venv/bin/activate
 pip install -r requirements.txt            # Python 3.11+ ; TensorFlow CPU
 python -m uvicorn src.api:app --port 8000  # the trained model and the data are already in the repo
@@ -173,7 +191,7 @@ This run is not comparable with the table above. It used fewer users and a diffe
 
 ## 8. Repository layout
 ```
-forest_ear/
+forest-ear/
 ├── README.md
 ├── notebook/forest_ear.ipynb      executed notebook (preprocessing, training, evaluation, prediction)
 ├── src/  config.py data_acquisition.py preprocessing.py model.py prediction.py
